@@ -8,6 +8,21 @@ type APIResult = {
   solutions: string[];
 } | false;
 
+type MessageProps = {
+  text: string;
+  level?: "info" | "result" | "error"; //defaults to info
+};
+function Message({text, level = "info"}: MessageProps) {
+  const textColorClass = {
+    info: "text-slate-700",
+    result: "text-emerald-700",
+    error: "text-red-700",
+  }[level];
+
+  return (<div className="mt-4 min-h-[48px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
+          <p className={`m-0 text-sm ${textColorClass}`}>{text}</p>
+        </div>)
+}
 
 function App() {
   const [equation, setEquation] = useState<string>('');
@@ -74,28 +89,20 @@ function App() {
         </div>
       </form>
 
-      {error && <div className="mt-4 min-h-[48px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
-        <p className="m-0 text-sm font-semibold text-red-700">{error}</p>
-      </div>}
+      {error && <Message text={error} level="error" />}
 
-      {!result && !error && <div className="mt-4 min-h-[48px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
-        <p className="m-0 text-sm text-slate-600">No response yet.</p>
-      </div>}
+      {!result && !error && <Message text="No response yet." level="info" />}
 
-      {result && <>
-        <div className="mt-4 min-h-[48px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
-          <p className="m-0 text-sm text-slate-700">Parsed equation as: {result.equation}</p>
-        </div>
+      {result && (
+        <>
+          <Message text={`Parsed equation as: ${result.equation}`} level="info" />
 
-        {result.solutions.map((solution: string, i: number) =>
-          <div className="mt-4 min-h-[48px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-3" key={i}>
-            <p className="m-0 text-sm font-semibold text-emerald-700">{solution}</p>
-          </div>
-        )}
-        {!result.solutions.length && <div className="mt-4 min-h-[48px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
-          <p className="m-0 text-sm text-slate-700">No solutions found.</p>
-        </div>}
-      </>}
+          {!result.solutions.length && <Message text="No solutions found." level="info" />}
+          {result.solutions.map((solution, i) => 
+                <Message key={i} text={solution} level="result" />
+          )}
+        </>
+      )}
     </div>
   );
 }
