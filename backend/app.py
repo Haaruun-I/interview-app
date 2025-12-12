@@ -51,8 +51,10 @@ def create_app() -> Flask:
 
         try:
             parsedEquation, solutions = solveEquation(equation)
-        except (SyntaxError, TokenError) as e:
+        except (SyntaxError, TokenError):
             return jsonify({"error": "Syntax Error"}), 400
+        except NotImplementedError:
+            return jsonify({"error": "Unable to solve"}), 400
 
         return jsonify({"result": {"equation": parsedEquation, "solutions": solutions}})
 

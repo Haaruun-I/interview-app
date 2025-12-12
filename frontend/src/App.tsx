@@ -92,6 +92,9 @@ function App() {
             <p className="m-0 text-sm font-semibold text-emerald-700">{solution}</p>
           </div>
         )}
+        {!result.solutions.length && <div className="mt-4 min-h-[48px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
+          <p className="m-0 text-sm text-slate-700">No solutions found.</p>
+        </div>}
       </>}
     </div>
   );
