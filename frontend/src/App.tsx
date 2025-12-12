@@ -3,9 +3,15 @@ import { useState, type FormEvent } from 'react';
 const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) || 'http://localhost:8000';
 
+type APIResult = {
+  equation: string;
+  solutions: string[];
+} | false;
+
+
 function App() {
   const [equation, setEquation] = useState<string>('');
-  const [result, setResult] = useState<string>('');
+  const [result, setResult] = useState<APIResult>(false);
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -14,22 +20,22 @@ function App() {
     const trimmedEquation = equation.trim();
     if (!trimmedEquation) {
       setError('Please enter an equation.');
-      setResult('');
+      setResult(false);
       return;
     }
 
     setLoading(true);
     setError('');
-    setResult('');
+    setResult(false);
     try {
       const response = await fetch(
         `${API_BASE_URL}/solve?equation=${encodeURIComponent(trimmedEquation)}`,
       );
-      const data: { result?: string; error?: string } = await response.json();
+      const data: { result?: APIResult; error?: string } = await response.json();
       if (!response.ok) {
         throw new Error(data?.error || 'Request failed');
       }
-      setResult(data.result || '');
+      setResult(data.result || false);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Request failed';
       setError(message);
@@ -68,11 +74,25 @@ function App() {
         </div>
       </form>
 
-      <div className="mt-4 min-h-[48px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
-        {result && <p className="m-0 text-sm font-semibold text-emerald-700">{result}</p>}
-        {error && <p className="m-0 text-sm font-semibold text-red-700">{error}</p>}
-        {!result && !error && <p className="m-0 text-sm text-slate-600">No response yet.</p>}
-      </div>
+      {error && <div className="mt-4 min-h-[48px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
+        <p className="m-0 text-sm font-semibold text-red-700">{error}</p>
+      </div>}
+
+      {!result && !error && <div className="mt-4 min-h-[48px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
+        <p className="m-0 text-sm text-slate-600">No response yet.</p>
+      </div>}
+
+      {result && <>
+        <div className="mt-4 min-h-[48px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
+          <p className="m-0 text-sm text-slate-700">Parsed equation as: {result.equation}</p>
+        </div>
+
+        {result.solutions.map((solution: string, i: number) =>
+          <div className="mt-4 min-h-[48px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-3" key={i}>
+            <p className="m-0 text-sm font-semibold text-emerald-700">{solution}</p>
+          </div>
+        )}
+      </>}
     </div>
   );
 }
